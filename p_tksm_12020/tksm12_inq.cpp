@@ -62,11 +62,24 @@ int f_tksm12_inq(EIClass * bcls_rec, EIClass * bcls_ret, CDbConnection * conn)
 				{
 					sqlstr = sqlstr + " and C_DIV=@c_div";
 				}
+// DM8 适配 CHANGE-269:查询。空值搜索 DECODE 改为标准 CASE。
+// 改写原因：空值搜索 DECODE 改为标准 CASE,不依赖 NULL 相等匹配的未记载语义；依据 DM 官方文档,DM8 尚未实测。
+// 本共用分支面向 DM8,其他 DB_KIND 标签也会执行此 SQL;参数、结果列、条件与排序保持不变。
+// 原 SQL（完整保留）：
+				// sqlstr = sqlstr + " and prod_time<=@end_time"
+					// " and prod_time>=@begin_time"
+					// " group by st_no"
+					// " union all"
+					// " select st_no,sum(prod_wt) prod_wt,sum(CO2_WT) CO2_WT,decode(trim(@equ_no),'',' ','其他') equ_no,decode(trim(@gx_div),'',' ','其他') gx_div,decode(sum(prod_wt),0,0,round(sum(CO2_WT)/sum(PROD_WT),6)) CO2_WT_UNIT"
+					// " from ttksm01"
+					// " where 1=1"
+					// ;
+// DM8 SQL：
 				sqlstr = sqlstr + " and prod_time<=@end_time"
 					" and prod_time>=@begin_time"
 					" group by st_no"
 					" union all"
-					" select st_no,sum(prod_wt) prod_wt,sum(CO2_WT) CO2_WT,decode(trim(@equ_no),'',' ','其他') equ_no,decode(trim(@gx_div),'',' ','其他') gx_div,decode(sum(prod_wt),0,0,round(sum(CO2_WT)/sum(PROD_WT),6)) CO2_WT_UNIT"
+					" select st_no,sum(prod_wt) prod_wt,sum(CO2_WT) CO2_WT,CASE WHEN trim(@equ_no) IS NULL OR trim(@equ_no) = '' THEN ' ' ELSE '其他' END equ_no,CASE WHEN trim(@gx_div) IS NULL OR trim(@gx_div) = '' THEN ' ' ELSE '其他' END gx_div,decode(sum(prod_wt),0,0,round(sum(CO2_WT)/sum(PROD_WT),6)) CO2_WT_UNIT"
 					" from ttksm01"
 					" where 1=1"
 					;
@@ -127,11 +140,24 @@ int f_tksm12_inq(EIClass * bcls_rec, EIClass * bcls_ret, CDbConnection * conn)
 				{
 					sqlstr = sqlstr + " and C_DIV=@c_div";
 				}
+// DM8 适配 CHANGE-270:查询。空值搜索 DECODE 改为标准 CASE。
+// 改写原因：空值搜索 DECODE 改为标准 CASE,不依赖 NULL 相等匹配的未记载语义；依据 DM 官方文档,DM8 尚未实测。
+// 本共用分支面向 DM8,其他 DB_KIND 标签也会执行此 SQL;参数、结果列、条件与排序保持不变。
+// 原 SQL（完整保留）：
+				// sqlstr = sqlstr + " and prod_time<=@end_time"
+					// " and prod_time>=@begin_time"
+					// " group by st_no"
+					// " union all"
+					// " select sum(prod_wt) prod_wt,sum(CO2_WT) CO2_WT,decode(trim(@equ_no),'',' ','其他') equ_no,decode(trim(@gx_div),'',' ','其他') gx_div,decode(sum(prod_wt),0,0,round(sum(CO2_WT)/sum(PROD_WT),6)) CO2_WT_UNIT"
+					// " from ttksm01"
+					// " where 1=1"
+					// ;
+// DM8 SQL：
 				sqlstr = sqlstr + " and prod_time<=@end_time"
 					" and prod_time>=@begin_time"
 					" group by st_no"
 					" union all"
-					" select sum(prod_wt) prod_wt,sum(CO2_WT) CO2_WT,decode(trim(@equ_no),'',' ','其他') equ_no,decode(trim(@gx_div),'',' ','其他') gx_div,decode(sum(prod_wt),0,0,round(sum(CO2_WT)/sum(PROD_WT),6)) CO2_WT_UNIT"
+					" select sum(prod_wt) prod_wt,sum(CO2_WT) CO2_WT,CASE WHEN trim(@equ_no) IS NULL OR trim(@equ_no) = '' THEN ' ' ELSE '其他' END equ_no,CASE WHEN trim(@gx_div) IS NULL OR trim(@gx_div) = '' THEN ' ' ELSE '其他' END gx_div,decode(sum(prod_wt),0,0,round(sum(CO2_WT)/sum(PROD_WT),6)) CO2_WT_UNIT"
 					" from ttksm01"
 					" where 1=1"
 					;
